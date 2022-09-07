@@ -18,7 +18,7 @@ if __name__ == '__main__':
     parser.add_argument('--total_load_sampling_method', type=str, default='constant',
                         choices=['constant', 'uniform_factor', 'normal_factor', 'uniform_values', 'normal_values'],
                         help='Method for total load sampling')
-    parser.add_argument('--total_load_params', default=None,
+    parser.add_argument('--total_load_params', nargs='*', type=float, default=None,
                         help='Parameters for total load sampling, depends on the method choice.')
 
     # Active load
@@ -26,7 +26,7 @@ if __name__ == '__main__':
                         choices=['homothetic', 'uniform_independent_factor', 'normal_independent_factor',
                                  'uniform_independent_values', 'normal_independent_values'],
                         help='Method for active load sampling.')
-    parser.add_argument('--active_load_params', default=None,
+    parser.add_argument('--active_load_params', nargs='*', type=float, default=None,
                         help='Parameters for active load sampling, depends on the method choice.')
 
     # Reactive load
@@ -36,7 +36,7 @@ if __name__ == '__main__':
                                  'normal_independent_factor', 'uniform_independent_values',
                                  'normal_independent_values'],
                         help='Method for reactive load sampling.')
-    parser.add_argument('--reactive_load_params', default=None,
+    parser.add_argument('--reactive_load_params', nargs='*', type=float, default=None,
                         help='Parameters for reactive load sampling, depends on the method choice.')
 
     # Active generation
@@ -44,7 +44,7 @@ if __name__ == '__main__':
                         choices=['homothetic', 'uniform_independent_factor', 'normal_independent_factor',
                                  'uniform_independent_values', 'normal_independent_values'],
                         help='Method for active generation sampling.')
-    parser.add_argument('--active_gen_params', default=None,
+    parser.add_argument('--active_gen_params', nargs='*', type=float, default=None,
                         help='Parameters for active generation sampling, depends on the method choice.')
 
     # Voltage setpoints
@@ -53,7 +53,7 @@ if __name__ == '__main__':
                                  'uniform_independent_factor', 'normal_independent_factor',
                                  'uniform_independent_values', 'normal_independent_values'],
                         help='Method for the voltage setpoint sampling.')
-    parser.add_argument('--voltage_setpoint_params', default=None,
+    parser.add_argument('--voltage_setpoint_params', nargs='*', type=float, default=None,
                         help='Parameters for voltage setpoint sampling, depends on the method choice.')
 
     # Topology
