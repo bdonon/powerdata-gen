@@ -99,3 +99,43 @@ of the distribution. Let us consider the case of the `uniform_independent_values
 > if there are only two loads. When dealing with n loads, the uniform sampling 
 > will amount to sampling from a n-dimensional simplex, thus making the marginal 
 > distributions skewed towards low values.
+ 
+## Reactive load
+
+Sampling of the individual reactive loads in *MVAr*.
+The sampling of the reactive load is performed after the sampling of active loads.
+In many of the proposed methods, the reactive power of a load depends on the new value of the active power.
+The following sampling methods are available, where parameters are denoted as $\alpha$ :
+
+| method                               | parameters | process                                                          |
+|--------------------------------------|------------|------------------------------------------------------------------|
+| `constant`                           | 0          | Does nothing.                                                    |
+| `constant_pq_ratio`                  | 0          | Keeps the $P/Q$ ratio constant.                                  |
+| `uniform_homothetic_factor`          | 2          | Uniformly samples a single factor applied to all reactive loads. |
+| `normal_homothetic_factor`           | 2          | Normally samples a single factor applied to all reactive loads.  |
+| `uniform_independent_factor`         | 2          | Uniformly samples individual factors applied to reactive loads.  |
+| `normal_independent_factor`          | 2          | Normally samples individual factors applied to reactive loads.   |
+| `uniform_independent_values`         | 2          | Uniformly samples individual reactive loads.                     |
+| `normal_independent_values`          | 2          | Normally samples individual reactive loads.                      |
+
+
+## Active generation
+
+## Voltage setpoints
+
+Sampling of the individual voltage setpoints in *p.u.*.
+The following sampling methods are available, where parameters are denoted as $\alpha$ :
+
+| method                               | parameters           | process                                                                                       |
+|--------------------------------------|----------------------|-----------------------------------------------------------------------------------------------|
+| `constant`                           | None                 | $V_i^{new} = V_i^{old}$                                                                       |
+| `uniform_homothetic_factor`          | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon \times V_i^{old}$; \epsilon \sim \mathcal{U}([\alpha_1, \alpha_2])$     |
+| `normal_homothetic_factor`           | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon \times V_i^{old}$; \epsilon \sim \mathcal{N}(\alpha_1, \alpha_2)$       |
+| `uniform_independent_factor`         | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon_i \times V_i^{old}$; \epsilon_i \sim \mathcal{U}([\alpha_1, \alpha_2])$ |
+| `normal_independent_factor`          | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon_i \times V_i^{old}$; \epsilon_i \sim \mathcal{N}(\alpha_1, \alpha_2)$   |
+| `uniform_independent_values`         | $\alpha_1, \alpha_2$ | $V_i^{new} \sim \mathcal{U}([\alpha_1, \alpha_2])$                                            |
+| `normal_independent_values`          | $\alpha_1, \alpha_2$ | $V_i^{new} \sim \mathcal{N}(\alpha_1, \alpha_2)$                                              |
+
+
+![Voltage setpoint sampling](./figures/voltage_setpoint_dark.png#gh-dark-mode-only)
+![Voltage setpoint sampling](./figures/voltage_setpoint_light.png#gh-light-mode-only)
