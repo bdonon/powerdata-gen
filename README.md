@@ -1,4 +1,4 @@
-# powerdatagen : Power Grid Datasets Generator
+# powerdatagen
 Generates a dataset of [pandapower](https://pandapower.org) power grids datasets from a single snapshot.
 
 # Usage
@@ -33,14 +33,16 @@ In the `sampling` field, one can define how the topology, loads and generation a
 | `active_gen`       | Sampling of individual active generation in *MW*.             |
 | `voltage_setpoint` | Sampling of individual generator voltage setpoints in *p.u.*. |
 
+These options are detailed in the following.
+
 ## Topology
 
 Sampling of the power grid topology.
 
 | method                 | parameters | process                                           |
 |------------------------|------------|---------------------------------------------------|
-| `constant`             | 0          | Does nothing                                      |
-| `random_disconnection` | X          | Randomly disconnects lines, generators and loads. |
+| `constant`             | None       | Does nothing                                      |
+| `random_disconnection` | See below  | Randomly disconnects lines, generators and loads. |
 
 In the `random_disconnection` mode, one should define a list of disconnection probabilities
 for generators, loads and lines. The first value of the list is the probability that
@@ -66,7 +68,7 @@ The following sampling methods are available, where parameters are denoted as $\
 
 | method           | parameters           | process                                                                                             |
 |------------------|----------------------|-----------------------------------------------------------------------------------------------------|
-| `constant`       | 0                    | $P_{tot}^{new} = P_{tot}^{old}$.                                                                    |
+| `constant`       | None                 | $P_{tot}^{new} = P_{tot}^{old}$.                                                                    |
 | `uniform_factor` | $\alpha_1, \alpha_2$ | $P_{tot}^{new} = \epsilon \times P_{tot}^{old}$ ; $\epsilon \sim \mathcal{U}([\alpha_1, \alpha_2])$ |
 | `normal_factor`  | $\alpha_1, \alpha_2$ | $P_{tot}^{new} = \epsilon \times P_{tot}^{old}$ ; $\epsilon \sim \mathcal{N}(\alpha_1, \alpha_2)$   |
 | `uniform_values` | $\alpha_1, \alpha_2$ | $P_{tot}^{new} \sim \mathcal{U}([\alpha_1, \alpha_2])$                                              |
@@ -77,15 +79,17 @@ The following sampling methods are available, where parameters are denoted as $\
 Sampling of the individual active loads in *MW*.
 The following sampling methods are available, where parameters are denoted as $\alpha$ :
 
-| method                       | parameters | process                                                            |
-|------------------------------|----------|--------------------------------------------------------------------|
-| `homothetic`                 | 0        | Homothetically adjusts loads to fit the total load.                |
-| `uniform_independent_factor` | $\alpha$ | Uniform sampling over a simplex centered around the old value[^1]. |
-| `normal_independent_factor`  | $\alpha$ | Normal sampling around the old value[^1].                          |
-| `uniform_independent_values` | $\alpha$ | Uniform sampling over a simplex[^1].                               |
-| `normal_independent_values`  | $\alpha$ | Normal sampling[^1].                                               |
+| method                       | parameters           | process                                                                                                                                |
+|------------------------------|----------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| `homothetic`                 | None                 | $P_i^{new} = P_i^{old} \times \frac{P_{tot}^{new}}{P_{tot}^{old}}$                                                                     |
+| `uniform_independent_factor` | $\alpha$             | $P_i^{new} = (\epsilon_i - \frac{1}{n} + \frac{P_i^{old}}{P_{tot}^{old}}) \times P_{tot}^{new} ; \epsilon \sim \mathcal{U}(S(\alpha))$ |
+| `normal_independent_factor`  | $\alpha_1, \alpha_2$ | $P_i^{new} = (\epsilon_i - \frac{\sum \epsilon_j}{n} + \frac{P_i^{old}}{P_{tot}^{old}}) \times P_{tot}^{new} ; \epsilon_i \sim \mathcal{N}(\alpha_1, \alpha_2)$         |
+| `uniform_independent_values` | $\alpha$             | $P_i^{new} = \epsilon_i \times P_{tot}^{new} ; \epsilon \sim \mathcal{U}(S(\alpha))$                                                   |
+| `normal_independent_values`  | $\alpha_1, \alpha_2$ | $P_i^{new} = (\epsilon_i + \frac{1-\sum \epsilon_j}{n}) \times P_{tot}^{new} ; \epsilon_i \sim \mathcal{N}(\alpha_1, \alpha_2)$        |
 
 [^1]: scaled so that it respects the total load.
+
+where $n$ is the amount of loads and$S(\alpha) = \{x | \sum x_i = 1, x_i \leq \alpha\}$.
 
 In the four last sampling methods, the parameter $\alpha \in [0,1]$ controls the spread 
 of the distribution. Let us consider the case of the `uniform_independent_values`.
@@ -144,3 +148,7 @@ The following sampling methods are available, where parameters are denoted as $\
 
 ![Voltage setpoint sampling](./figures/voltage_setpoint_dark.png#gh-dark-mode-only)
 ![Voltage setpoint sampling](./figures/voltage_setpoint_light.png#gh-light-mode-only)
+
+# Contacts
+
+If you have any questions, please contact me at [balthazar.donon@uliege.be](mailto:balthazar.donon@uliege.be)
