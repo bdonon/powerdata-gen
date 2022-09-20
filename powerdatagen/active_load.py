@@ -21,35 +21,40 @@ def sample_active_load(net, default_net, total_load, config):
 
 def apply_homothetic_transform(net, default_net, total_load):
     """Homothetically transforms active loads to respect total_load."""
-    factor = total_load / default_net.load.p_mw.sum()
-    net.load.p_mw = factor * default_net.load.p_mw
+    active = net.load.in_service
+    factor = total_load / default_net.load.p_mw.loc[active].sum()
+    net.load.p_mw.loc[active] = factor * default_net.load.p_mw.loc[active]
 
 
 def sample_uniform_independent_factor(net, default_net, total_load, params):
     """Samples uniformly around the default situation, while respecting the total_load."""
-    n_load = len(net.load)
-    default_value = default_net.load.p_mw / default_net.load.p_mw.sum()
+    active = net.load.in_service
+    n_load = active.sum()
+    default_value = default_net.load.p_mw.loc[active] / default_net.load.p_mw.loc[active].sum()
     factor = sample_uniform_simplex(params[0], size=n_load, center_around_zero=True)
-    net.load.p_mw = (factor + default_value) * total_load
+    net.load.p_mw.loc[active] = (factor + default_value) * total_load
 
 
 def sample_normal_independent_factor(net, default_net, total_load, params):
     """Samples normally around the default situation, while respecting the total_load."""
-    n_load = len(net.load)
-    default_value = default_net.load.p_mw / default_net.load.p_mw.sum()
+    active = net.load.in_service
+    n_load = active.sum()
+    default_value = default_net.load.p_mw.loc[active] / default_net.load.p_mw.loc[active].sum()
     factor = sample_normal_simplex(params[0], size=n_load, center_around_zero=True)
-    net.load.p_mw = (factor + default_value) * total_load
+    net.load.p_mw.loc[active] = (factor + default_value) * total_load
 
 
 def sample_uniform_independent_values(net, total_load, params):
     """Samples independent loads uniformly, while respecting total_load."""
-    n_load = len(net.load)
+    active = net.load.in_service
+    n_load = active.sum()
     factor = sample_uniform_simplex(params[0], size=n_load)
-    net.load.p_mw = total_load * factor
+    net.load.p_mw.loc[active] = total_load * factor
 
 
 def sample_normal_independent_values(net, total_load, params):
     """Samples independent loads normally, while respecting total_load."""
-    n_load = len(net.load)
+    active = net.load.in_service
+    n_load = active.sum()
     factor = sample_normal_simplex(params[0], size=n_load)
-    net.load.p_mw = total_load * factor
+    net.load.p_mw.loc[active] = total_load * factor

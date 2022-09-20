@@ -1,9 +1,17 @@
 {
   "default_net_path": "standard_cases/case60nordic.json",
-  "dataset_name": "data/case60_simple",
+  "dataset_name": "data/case60_simple_topo",
   "n_train": 10000,
   "n_test": 1000,
   "sampling": {
+    "topology": {
+      "sampling_method": "random_disconnection",
+      "params": {
+        "gen": [0.6, 0.2, 0.1, 0.1],
+        "load": [0.6, 0.2, 0.1, 0.1],
+        "line": [0.6, 0.2, 0.1, 0.1]
+      }
+    },
     "total_load": {
       "sampling_method": "uniform_factor",
       "params": [
