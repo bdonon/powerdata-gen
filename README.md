@@ -89,7 +89,7 @@ The following sampling methods are available, where parameters are denoted as $\
 
 [^1]: scaled so that it respects the total load.
 
-where $n$ is the amount of loads and$S(\alpha) = \{x | \sum x_i = 1, x_i \leq \alpha\}$.
+where $n$ is the amount of loads and $S(\alpha) = \{x | \sum x_i = 1, x_i \leq \alpha\}$.
 
 In the four last sampling methods, the parameter $\alpha \in [0,1]$ controls the spread 
 of the distribution. Let us consider the case of the `uniform_independent_values`.
