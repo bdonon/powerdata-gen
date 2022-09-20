@@ -64,13 +64,13 @@ that exactly one transmission line is disconnected.
 Sampling of the total consumption of the grid, denoted as $P_{tot}^{new}$.
 The following sampling methods are available, where parameters are denoted as $\alpha$ :
 
-| method           | parameters | process                                                                                           |
-|------------------|------------|---------------------------------------------------------------------------------------------------|
-| `constant`       | 0          | $P_{tot}^{new} = P_{tot}^{old}$.                                                                  |
-| `uniform_factor` | 2          | $P_{tot}^{new} = \epsilon \times P_{tot}^{old}$ ; $\epsilon \sim \mathcal{U}(\alpha_1, \alpha_2)$ |
-| `normal_factor`  | 2          | $P_{tot}^{new} = \epsilon \times P_{tot}^{old}$ ; $\epsilon \sim \mathcal{N}(\alpha_1, \alpha_2)$ |
-| `uniform_values` | 2          | $P_{tot}^{new} \sim \mathcal{U}(\alpha_1, \alpha_2)$                                              |
-| `normal_values`  | 2          | $P_{tot}^{new} \sim \mathcal{N}(\alpha_1, \alpha_2)$                                              |
+| method           | parameters           | process                                                                                             |
+|------------------|----------------------|-----------------------------------------------------------------------------------------------------|
+| `constant`       | 0                    | $P_{tot}^{new} = P_{tot}^{old}$.                                                                    |
+| `uniform_factor` | $\alpha_1, \alpha_2$ | $P_{tot}^{new} = \epsilon \times P_{tot}^{old}$ ; $\epsilon \sim \mathcal{U}([\alpha_1, \alpha_2])$ |
+| `normal_factor`  | $\alpha_1, \alpha_2$ | $P_{tot}^{new} = \epsilon \times P_{tot}^{old}$ ; $\epsilon \sim \mathcal{N}(\alpha_1, \alpha_2)$   |
+| `uniform_values` | $\alpha_1, \alpha_2$ | $P_{tot}^{new} \sim \mathcal{U}([\alpha_1, \alpha_2])$                                              |
+| `normal_values`  | $\alpha_1, \alpha_2$ | $P_{tot}^{new} \sim \mathcal{N}(\alpha_1, \alpha_2)$                                                |
 
 ## Active load
 
@@ -78,12 +78,12 @@ Sampling of the individual active loads in *MW*.
 The following sampling methods are available, where parameters are denoted as $\alpha$ :
 
 | method                       | parameters | process                                                            |
-|------------------------------|------------|--------------------------------------------------------------------|
-| `homothetic`                 | 0          | Homothetically adjusts loads to fit the total load.                |
-| `uniform_independent_factor` | 1          | Uniform sampling over a simplex centered around the old value[^1]. |
-| `normal_independent_factor`  | 1          | Normal sampling around the old value[^1].                          |
-| `uniform_independent_values` | 1          | Uniform sampling over a simplex[^1].                               |
-| `normal_independent_values`  | 1          | Normal sampling[^1].                                               |
+|------------------------------|----------|--------------------------------------------------------------------|
+| `homothetic`                 | 0        | Homothetically adjusts loads to fit the total load.                |
+| `uniform_independent_factor` | $\alpha$ | Uniform sampling over a simplex centered around the old value[^1]. |
+| `normal_independent_factor`  | $\alpha$ | Normal sampling around the old value[^1].                          |
+| `uniform_independent_values` | $\alpha$ | Uniform sampling over a simplex[^1].                               |
+| `normal_independent_values`  | $\alpha$ | Normal sampling[^1].                                               |
 
 [^1]: scaled so that it respects the total load.
 
@@ -107,34 +107,39 @@ The sampling of the reactive load is performed after the sampling of active load
 In many of the proposed methods, the reactive power of a load depends on the new value of the active power.
 The following sampling methods are available, where parameters are denoted as $\alpha$ :
 
-| method                               | parameters | process                                                          |
-|--------------------------------------|------------|------------------------------------------------------------------|
-| `constant`                           | 0          | Does nothing.                                                    |
-| `constant_pq_ratio`                  | 0          | Keeps the $P/Q$ ratio constant.                                  |
-| `uniform_homothetic_factor`          | 2          | Uniformly samples a single factor applied to all reactive loads. |
-| `normal_homothetic_factor`           | 2          | Normally samples a single factor applied to all reactive loads.  |
-| `uniform_independent_factor`         | 2          | Uniformly samples individual factors applied to reactive loads.  |
-| `normal_independent_factor`          | 2          | Normally samples individual factors applied to reactive loads.   |
-| `uniform_independent_values`         | 2          | Uniformly samples individual reactive loads.                     |
-| `normal_independent_values`          | 2          | Normally samples individual reactive loads.                      |
+| method                               | parameters           | process                                                                                      |
+|--------------------------------------|----------------------|----------------------------------------------------------------------------------------------|
+| `constant`                           | None                 | $Q_i^{new} = Q_i^{old}$                                                                      |
+| `constant_pq_ratio`                  | None                 | $Q_i^{new} = P_i^{new} \times \frac{Q_i^{old}}{P_i^{old}}$                                   |
+| `uniform_homothetic_factor`          | $\alpha_1, \alpha_2$ | $Q_i^{new} = \epsilon \times Q_i^{old}; \epsilon \sim \mathcal{U}([\alpha_1, \alpha_2])$     |
+| `normal_homothetic_factor`           | $\alpha_1, \alpha_2$ | $Q_i^{new} = \epsilon \times Q_i^{old}; \epsilon \sim \mathcal{N}(\alpha_1, \alpha_2)$       |
+| `uniform_independent_factor`         | $\alpha_1, \alpha_2$ | $Q_i^{new} = \epsilon_i \times Q_i^{old}; \epsilon_i \sim \mathcal{U}([\alpha_1, \alpha_2])$ |
+| `normal_independent_factor`          | $\alpha_1, \alpha_2$ | $Q_i^{new} = \epsilon_i \times Q_i^{old}; \epsilon_i \sim \mathcal{N}(\alpha_1, \alpha_2)$   |
+| `uniform_independent_values`         | $\alpha_1, \alpha_2$ | $Q_i^{new} \sim \mathcal{U}([\alpha_1, \alpha_2])$                                           |
+| `normal_independent_values`          | $\alpha_1, \alpha_2$ | $Q_i^{new} \sim \mathcal{N}(\alpha_1, \alpha_2)$                                             |
 
+![Reactive load sampling](./figures/reactive_load_dark.png#gh-dark-mode-only)
+![Reactive load sampling](./figures/reactive_load_light.png#gh-light-mode-only)
 
 ## Active generation
+
+Identical to active loads. The total load is scaled by a factor 1.02 to account for the power 
+losses caused by Joule's effect.
 
 ## Voltage setpoints
 
 Sampling of the individual voltage setpoints in *p.u.*.
 The following sampling methods are available, where parameters are denoted as $\alpha$ :
 
-| method                               | parameters           | process                                                                                    |
-|--------------------------------------|----------------------|--------------------------------------------------------------------------------------------|
-| `constant`                           | None                 | $V_i^{new} = V_i^{old}$                                                                    |
-| `uniform_homothetic_factor`          | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon \times V_i^{old}; \epsilon \sim \mathcal{U}([\alpha_1, \alpha_2])$   |
-| `normal_homothetic_factor`           | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon \times V_i^{old}; \epsilon \sim \mathcal{N}(\alpha_1, \alpha_2)$     |
+| method                               | parameters           | process                                                                                      |
+|--------------------------------------|----------------------|----------------------------------------------------------------------------------------------|
+| `constant`                           | None                 | $V_i^{new} = V_i^{old}$                                                                      |
+| `uniform_homothetic_factor`          | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon \times V_i^{old}; \epsilon \sim \mathcal{U}([\alpha_1, \alpha_2])$     |
+| `normal_homothetic_factor`           | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon \times V_i^{old}; \epsilon \sim \mathcal{N}(\alpha_1, \alpha_2)$       |
 | `uniform_independent_factor`         | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon_i \times V_i^{old}; \epsilon_i \sim \mathcal{U}([\alpha_1, \alpha_2])$ |
-| `normal_independent_factor`          | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon_i \times V_i^{old}; \epsilon_i \sim \mathcal{N}(\alpha_1, \alpha_2)$ |
-| `uniform_independent_values`         | $\alpha_1, \alpha_2$ | $V_i^{new} \sim \mathcal{U}([\alpha_1, \alpha_2])$                                         |
-| `normal_independent_values`          | $\alpha_1, \alpha_2$ | $V_i^{new} \sim \mathcal{N}(\alpha_1, \alpha_2)$                                           |
+| `normal_independent_factor`          | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon_i \times V_i^{old}; \epsilon_i \sim \mathcal{N}(\alpha_1, \alpha_2)$   |
+| `uniform_independent_values`         | $\alpha_1, \alpha_2$ | $V_i^{new} \sim \mathcal{U}([\alpha_1, \alpha_2])$                                           |
+| `normal_independent_values`          | $\alpha_1, \alpha_2$ | $V_i^{new} \sim \mathcal{N}(\alpha_1, \alpha_2)$                                             |
 
 
 ![Voltage setpoint sampling](./figures/voltage_setpoint_dark.png#gh-dark-mode-only)
