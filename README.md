@@ -39,11 +39,14 @@ TODO
 
 ## Total load
 
-| method           | parameters | function                                                                                      |
-|------------------|------------|-----------------------------------------------------------------------------------------------|
-| `constant`       | 0          | $P_{tot}^{new} = P_{tot}^{old}$.                                                              |
-| `uniform_factor` | 2          | $P_{tot}^{new} = \epsilon P_{tot}^{old}$ where $\epsilon \sim \mathcal{U}(\alpha_1, \alpha_2) |
-| `normal_factor`  | 2          | Sampling of individual active load in *MW*.                                                   |
-| `uniform_values` | 2          | Sampling of individual reactive loads in *MVAr*.                                              |
-| `normal_values`  | 2          | Sampling of individual active generation in *MW*.                                             |
+Sampling of the total consumption of the grid, denoted as $P_{tot}^{new}$.
+The following sampling methods are available, where parameters are denoted as $\alpha$ :
+
+| method           | parameters | function                                                                                              |
+|------------------|------------|-------------------------------------------------------------------------------------------------------|
+| `constant`       | 0          | $P_{tot}^{new} = P_{tot}^{old}$.                                                                      |
+| `uniform_factor` | 2          | $P_{tot}^{new} = \epsilon \times P_{tot}^{old}$ where $\epsilon \sim \mathcal{U}(\alpha_1, \alpha_2)$ |
+| `normal_factor`  | 2          | $P_{tot}^{new} = \epsilon \times P_{tot}^{old}$ where $\epsilon \sim \mathcal{N}(\alpha_1, \alpha_2)$ |
+| `uniform_values` | 2          | $P_{tot}^{new} \sim \mathcal{U}(\alpha_1, \alpha_2)$                                                  |
+| `normal_values`  | 2          | $P_{tot}^{new} \sim \mathcal{N}(\alpha_1, \alpha_2)$                                                  |
 
