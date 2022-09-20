@@ -1,0 +1,38 @@
+{
+  "default_net_path": "standard_cases/case60nordic.json",
+  "dataset_name": "data/case60_simple",
+  "n_train": 10000,
+  "n_test": 1000,
+  "sampling": {
+    "total_load": {
+      "sampling_method": "uniform_factor",
+      "params": [
+        0.5,
+        1.2
+      ]
+    },
+    "active_load": {
+      "sampling_method": "uniform_independent_values",
+      "params": [
+        0.8
+      ]
+    },
+    "reactive_load": {
+      "sampling_method": "constant_pq_ratio",
+      "params": []
+    },
+    "active_gen": {
+      "sampling_method": "uniform_independent_values",
+      "params": [
+        0.8
+      ]
+    },
+    "voltage_setpoint": {
+      "sampling_method": "uniform_independent_values",
+      "params": [
+        0.95,
+        1.05
+      ]
+    }
+  }
+}

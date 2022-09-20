@@ -1,8 +1,10 @@
 import numpy as np
 
 
-def sample_reactive_load(net, default_net, method, params):
+def sample_reactive_load(net, default_net, config):
     """Samples reactive loads based on those found in default_net."""
+    method = config["sampling_method"]
+    params = config["params"]
     if method == 'constant':
         pass
     elif method == 'constant_pq_ratio':

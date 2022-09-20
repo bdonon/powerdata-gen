@@ -3,8 +3,10 @@ from .random import sample_normal_simplex, sample_uniform_simplex
 # TODO checker qu'on ne travaille que sur les objets connectés...
 
 
-def sample_active_load(net, default_net, total_load, method, params):
+def sample_active_load(net, default_net, total_load, config):
     """Samples active loads while respecting the total load."""
+    method = config["sampling_method"]
+    params = config["params"]
     if method == 'homothetic':
         apply_homothetic_transform(net, default_net, total_load)
     elif method == 'uniform_independent_factor':

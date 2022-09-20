@@ -1,8 +1,10 @@
 import numpy as np
 
 
-def sample_voltage_setpoint(net, default_net, method, params):
+def sample_voltage_setpoint(net, default_net, config):
     """Samples voltage setpoints based on those found in default_net."""
+    method = config["sampling_method"]
+    params = config["params"]
     if method == 'constant':
         pass
     elif method == 'uniform_homothetic_factor':
