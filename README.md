@@ -126,15 +126,15 @@ The following sampling methods are available, where parameters are denoted as $\
 Sampling of the individual voltage setpoints in *p.u.*.
 The following sampling methods are available, where parameters are denoted as $\alpha$ :
 
-| method                               | parameters           | process                                                                                       |
-|--------------------------------------|----------------------|-----------------------------------------------------------------------------------------------|
-| `constant`                           | None                 | $V_i^{new} = V_i^{old}$                                                                       |
-| `uniform_homothetic_factor`          | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon \times V_i^{old}$; \epsilon \sim \mathcal{U}([\alpha_1, \alpha_2])$     |
-| `normal_homothetic_factor`           | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon \times V_i^{old}$; \epsilon \sim \mathcal{N}(\alpha_1, \alpha_2)$       |
-| `uniform_independent_factor`         | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon_i \times V_i^{old}$; \epsilon_i \sim \mathcal{U}([\alpha_1, \alpha_2])$ |
-| `normal_independent_factor`          | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon_i \times V_i^{old}$; \epsilon_i \sim \mathcal{N}(\alpha_1, \alpha_2)$   |
-| `uniform_independent_values`         | $\alpha_1, \alpha_2$ | $V_i^{new} \sim \mathcal{U}([\alpha_1, \alpha_2])$                                            |
-| `normal_independent_values`          | $\alpha_1, \alpha_2$ | $V_i^{new} \sim \mathcal{N}(\alpha_1, \alpha_2)$                                              |
+| method                               | parameters           | process                                                                                    |
+|--------------------------------------|----------------------|--------------------------------------------------------------------------------------------|
+| `constant`                           | None                 | $V_i^{new} = V_i^{old}$                                                                    |
+| `uniform_homothetic_factor`          | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon \times V_i^{old}; \epsilon \sim \mathcal{U}([\alpha_1, \alpha_2])$   |
+| `normal_homothetic_factor`           | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon \times V_i^{old}; \epsilon \sim \mathcal{N}(\alpha_1, \alpha_2)$     |
+| `uniform_independent_factor`         | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon_i \times V_i^{old}; \epsilon_i \sim \mathcal{U}([\alpha_1, \alpha_2])$ |
+| `normal_independent_factor`          | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon_i \times V_i^{old}; \epsilon_i \sim \mathcal{N}(\alpha_1, \alpha_2)$ |
+| `uniform_independent_values`         | $\alpha_1, \alpha_2$ | $V_i^{new} \sim \mathcal{U}([\alpha_1, \alpha_2])$                                         |
+| `normal_independent_values`          | $\alpha_1, \alpha_2$ | $V_i^{new} \sim \mathcal{N}(\alpha_1, \alpha_2)$                                           |
 
 
 ![Voltage setpoint sampling](./figures/voltage_setpoint_dark.png#gh-dark-mode-only)
