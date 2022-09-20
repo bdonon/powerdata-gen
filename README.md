@@ -149,6 +149,6 @@ The following sampling methods are available, where parameters are denoted as $\
 ![Voltage setpoint sampling](./figures/voltage_setpoint_dark.png#gh-dark-mode-only)
 ![Voltage setpoint sampling](./figures/voltage_setpoint_light.png#gh-light-mode-only)
 
-# Contacts
+# Contact
 
 If you have any questions, please contact me at [balthazar.donon@uliege.be](mailto:balthazar.donon@uliege.be)
