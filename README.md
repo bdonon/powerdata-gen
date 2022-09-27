@@ -149,6 +149,14 @@ The following sampling methods are available, where parameters are denoted as $\
 ![Voltage setpoint sampling](./figures/voltage_setpoint_dark.png#gh-dark-mode-only)
 ![Voltage setpoint sampling](./figures/voltage_setpoint_light.png#gh-light-mode-only)
 
+# Database conversion
+
+For now, this code generates pandapower files in `.json`. If you wish to convert this database 
+into another format, you may use the `dataset_converter.py` script as follows :
+```
+python dataset_converter.py --source_database 'data/case60' --target_database 'data/case60_matpower' --target_extension '.m'
+```
+
 # Contact
 
 If you have any questions, please contact me at [balthazar.donon@uliege.be](mailto:balthazar.donon@uliege.be)
