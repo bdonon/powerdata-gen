@@ -14,7 +14,7 @@ def get_export(extension):
         return pp.to_excel
     elif extension == '.sql':
         return pp.to_sql
-    elif extension == '.m':
+    elif extension == '.mat':
         return pc.to_mpc
     else:
         raise ValueError('Extension not valid !')
@@ -44,7 +44,7 @@ if __name__ == '__main__':
         for source_file in tqdm.tqdm(os.listdir(source_path), desc='Processing {} set'.format(mode)):
             if source_file.endswith('.json'):
                 net = pp.from_json(os.path.join(source_path, source_file))
-                target_file = os.path.splitext(source_file)[0]
+                target_file = os.path.splitext(source_file)[0] + args.target_extension
                 export(net, os.path.join(target_path, target_file))
             else:
                 pass

@@ -154,7 +154,7 @@ The following sampling methods are available, where parameters are denoted as $\
 For now, this code generates pandapower files in `.json`. If you wish to convert this database 
 into another format, you may use the `dataset_converter.py` script as follows :
 ```
-python dataset_converter.py --source_database 'data/case60' --target_database 'data/case60_matpower' --target_extension '.m'
+python dataset_converter.py --source_database 'data/case60' --target_database 'data/case60_matpower' --target_extension '.mat'
 ```
 
 # Contact
