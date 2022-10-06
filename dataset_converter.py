@@ -16,9 +16,20 @@ def get_export(extension):
         return pp.to_sql
     elif extension == '.mat':
         return pc.to_mpc
+    elif extension == '.m':
+        from oct2py import octave
+        return matpower_export_factory(octave)
     else:
         raise ValueError('Extension not valid !')
 
+def matpower_export_factory(octave):
+    def matpower_export(net, target_path):
+        pc.to_mpc(net, 'tmp.mat')
+        mpc = octave.loadcase('tmp.mat')
+        #octave.runpf(mpc)
+        octave.savecase(target_path, mpc)
+        os.remove('tmp.mat')
+    return matpower_export
 
 if __name__ == '__main__':
 
