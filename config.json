@@ -7,9 +7,8 @@
     "topology": {
       "sampling_method": "random_disconnection",
       "params": {
-        "gen": [0.6, 0.2, 0.1, 0.1],
-        "load": [0.6, 0.2, 0.1, 0.1],
-        "line": [0.6, 0.2, 0.1, 0.1]
+        "gen": [0.34, 0.33, 0.33],
+        "line": [0.34, 0.33, 0.33]
       }
     },
     "total_load": {
@@ -20,9 +19,10 @@
       ]
     },
     "active_load": {
-      "sampling_method": "uniform_independent_values",
+      "sampling_method": "normal_independent_factor",
       "params": [
-        0.8
+        0.0,
+        0.01
       ]
     },
     "reactive_load": {
@@ -30,17 +30,15 @@
       "params": []
     },
     "active_gen": {
-      "sampling_method": "uniform_independent_values",
+      "sampling_method": "normal_independent_factor",
       "params": [
-        0.8
+        0.0,
+        0.01
       ]
     },
     "voltage_setpoint": {
-      "sampling_method": "uniform_independent_values",
-      "params": [
-        0.95,
-        1.05
-      ]
+      "sampling_method": "constant",
+      "params": []
     }
   }
 }
