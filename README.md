@@ -14,13 +14,14 @@ It generates both a train and a test sets from the same data generating process.
 
 The file `config.json` defines the parameters of the data generation process.
 
-| parameter          | purpose                                                                |
-|--------------------|------------------------------------------------------------------------|
-| `default_net_path` | Path to the default pandapower network. Should be a `.json` file.      |
-| `dataset_name`     | Path where the generated dataset should be stored.                     |
-| `n_train`          | Amount of samples in the train set.                                    |
-| `n_test`           | Amount of samples in the test set.                                     |
-| `sampling`         | Defines the data generating process from which power grids are sampled |
+| parameter          | purpose                                                                                      |
+|--------------------|----------------------------------------------------------------------------------------------|
+| `default_net_path` | Path to the default pandapower network. Should be a `.json` file.                            |
+| `dataset_name`     | Path where the generated dataset should be stored.                                           |
+| `n_train`          | Amount of samples in the train set.                                                          |
+| `n_test`           | Amount of samples in the test set.                                                           |
+| `reject_max`       | Max amount of rejection (negative loads or out of range generation) before complete restart. |
+| `sampling`         | Defines the data generating process from which power grids are sampled.                      |
 
 In the `sampling` field, one can define how the topology, loads and generation are built :
 

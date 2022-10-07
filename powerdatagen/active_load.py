@@ -3,6 +3,22 @@ from .random import sample_normal_simplex, sample_uniform_simplex
 # TODO checker qu'on ne travaille que sur les objets connectés...
 
 
+def sample_active_load_reject(net, default_net, total_load, config, reject_max):
+    """Samples loads, rejects and counts negative loads."""
+    negative_load = True
+    reject = -1
+    while negative_load and reject < reject_max:
+        reject += 1
+        sample_active_load(net, default_net, total_load, config)
+        negative_load = check_active_load(net)
+    return reject
+
+
+def check_active_load(net):
+    """Returns True if a load is negative."""
+    return (net.load.p_mw < 0.).any()
+
+
 def sample_active_load(net, default_net, total_load, config):
     """Samples active loads while respecting the total load."""
     method = config["sampling_method"]
