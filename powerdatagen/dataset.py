@@ -63,10 +63,15 @@ def build_dataset(default_net, n_files, path, sampling_config, reject_max):
         pbar.set_description("Div. ratio = {:.2e}, Load reject ratio = {:.2e}, Gen reject ratio = {:.2e}".format(
             divergence_ratio, active_load_reject_ratio, active_gen_reject_ratio))
 
-    generation_output = {
+    generation_log = {
         'Divergence ratio': divergence_ratio,
         'Active load reject': active_load_reject_ratio,
         'Active generation reject': active_gen_reject_ratio
     }
-    with open(os.path.join(path, 'generation_output.json'), 'w') as f:
-        json.dump(generation_output, f)
+    with open(os.path.join(path, "generation.log"), "w") as file:
+        file.write(str(generation_log))
+
+    #with open(os.path.join(path, 'generation_output.json'), 'w') as f:
+    #    json.dump(generation_output, f)
+
+    #generation.out
