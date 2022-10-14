@@ -19,64 +19,62 @@ def build_train_test_datasets(default_net_path, dataset_name, n_train, n_test, s
     build_dataset(default_net, n_test, os.path.join(dataset_name, 'test'), sampling_config, reject_max)
 
 
+def check_active_gen(net):
+    """Returns True if a generator generates a p_mw out of its min-max range."""
+    active_gen = net.gen[net.gen.in_service==True]
+    return np.array([(active_gen.p_mw < active_gen.min_p_mw).any(), (active_gen.p_mw > active_gen.max_p_mw).any()]).any()
+
+
+def check_active_load(net):
+    """Returns True if a load is negative."""
+    return (net.load.p_mw < 0.).any()
+
+
+def check_branch_overflow(net):
+    return np.array([(net.res_line.loading_percent > 100).any(), (net.res_trafo.loading_percent > 100).any()]).any()
+
+
+def check_disconnected_bus(net):
+    return top.unsupplied_buses(net)
+
+
+def reject_function(net):
+    if check_active_gen(net) or check_active_load(net) or check_branch_overflow(net) or check_disconnected_bus(net):
+        return True
+    else:
+        return False
+
+
 def build_dataset(default_net, n_files, path, sampling_config, reject_max):
     """"""
-
     os.mkdir(path)
-
-
     n_characters = np.ceil(np.log10(n_files)).astype(int)
-
-    n_converged, n_diverged = 0, 0
-    active_load_reject, active_gen_reject = 0, 0
-    active_load_accept, active_gen_accept = 0, 0
-
+    n_divergence, n_rejection = 0, 0
     pbar = tqdm.tqdm(range(n_files))
     for i in pbar:
         not_converged, reject = True, True
         while not_converged or reject:
-            net, n_reject = sample_power_grid(default_net, sampling_config, reject_max)
-            active_load_reject += n_reject['load']
-            active_gen_reject += n_reject['gen']
-            reject = False
-            if n_reject['load'] >= reject_max:
-                reject = True
-            else:
-                active_load_accept += 1
-            if n_reject['gen'] >= reject_max:
-                reject = True
-            else:
-                active_gen_accept += 1
-            # Todo : clean sample rejection
-            if top.unsupplied_buses(net):
-                reject = True
-                print('Unsupplied buses !')
-
+            net = sample_power_grid(default_net, sampling_config)
             try:
                 pp.runpp(net)
-                # Get rid of snapshots with unsupplied buses
                 not_converged = False
-                n_converged += 1
-
             except:
                 not_converged = True
-                n_diverged += 1
+                n_divergence += 1
+            reject = reject_function(net)
+            if reject:
+                n_rejection += 1
 
         file_name = 'sample_' + str(i).rjust(n_characters, '0') + '.json'
         file_path = os.path.join(path, file_name)
         pp.to_json(net, file_path)
 
-
-        divergence_ratio = n_diverged / (n_diverged + n_converged)
-        active_load_reject_ratio = active_load_reject / (active_load_reject + active_load_accept)
-        active_gen_reject_ratio = active_gen_reject / (active_gen_reject + active_gen_accept)
-        pbar.set_description("Div. ratio = {:.2e}, Load reject ratio = {:.2e}, Gen reject ratio = {:.2e}".format(
-            divergence_ratio, active_load_reject_ratio, active_gen_reject_ratio))
+        pbar.set_description("Divergences = {}, Rejections = {} ".format(
+            n_divergence, n_rejection))
 
     generation_log = {
-        'Divergence ratio': divergence_ratio,
-        'Active load reject': active_load_reject_ratio,
-        'Active generation reject': active_gen_reject_ratio
+        'Divergences': n_divergence,
+        'Rejections': n_rejection
     }
     with open(os.path.join(path, "generation.log"), "w") as file:
         file.write(str(generation_log))
