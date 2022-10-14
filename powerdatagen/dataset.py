@@ -1,4 +1,5 @@
 import pandapower as pp
+import pandapower.topology as top
 import numpy as np
 import tqdm
 import json
@@ -46,16 +47,25 @@ def build_dataset(default_net, n_files, path, sampling_config, reject_max):
                 reject = True
             else:
                 active_gen_accept += 1
+            # Todo : clean sample rejection
+            if top.unsupplied_buses(net):
+                reject = True
+                print('Unsupplied buses !')
+
             try:
                 pp.runpp(net)
-                file_name = 'sample_' + str(i).rjust(n_characters, '0') + '.json'
-                file_path = os.path.join(path, file_name)
-                pp.to_json(net, file_path)
+                # Get rid of snapshots with unsupplied buses
                 not_converged = False
                 n_converged += 1
-            except pp.LoadflowNotConverged:
+
+            except:
+                not_converged = True
                 n_diverged += 1
-                pass
+
+        file_name = 'sample_' + str(i).rjust(n_characters, '0') + '.json'
+        file_path = os.path.join(path, file_name)
+        pp.to_json(net, file_path)
+
 
         divergence_ratio = n_diverged / (n_diverged + n_converged)
         active_load_reject_ratio = active_load_reject / (active_load_reject + active_load_accept)

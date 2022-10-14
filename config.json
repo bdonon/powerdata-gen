@@ -1,6 +1,6 @@
 {
-  "default_net_path": "standard_cases/case60nordic_2000.json",
-  "dataset_name": "data/case60nordic_2000",
+  "default_net_path": "standard_cases/case60nordic.json",
+  "dataset_name": "data/case60nordic",
   "n_train": 10000,
   "n_test": 1000,
   "reject_max": 10,
