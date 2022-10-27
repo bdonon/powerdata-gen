@@ -1,6 +1,6 @@
 {
   "default_net_path": "standard_cases/case60nordic.json",
-  "dataset_name": "data/case60nordic",
+  "dataset_name": "data/case60nordic_small",
   "n_train": 10000,
   "n_test": 1000,
   "reject_max": 10,
@@ -25,7 +25,7 @@
       "sampling_method": "normal_independent_factor",
       "params": [
         0.0,
-        0.01
+        0.005
       ]
     },
     "reactive_load": {
@@ -36,7 +36,7 @@
       "sampling_method": "normal_independent_factor",
       "params": [
         0.0,
-        0.01
+        0.005
       ]
     },
     "voltage_setpoint": {

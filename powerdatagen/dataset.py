@@ -31,7 +31,7 @@ def check_active_load(net):
 
 
 def check_branch_overflow(net):
-    return np.array([(net.res_line.loading_percent > 100).any(), (net.res_trafo.loading_percent > 100).any()]).any()
+    return np.array([(net.res_line.loading_percent > 95).any(), (net.res_trafo.loading_percent > 95).any()]).any()
 
 
 def check_disconnected_bus(net):
@@ -56,7 +56,7 @@ def build_dataset(default_net, n_files, path, sampling_config, reject_max):
         while not_converged or reject:
             net = sample_power_grid(default_net, sampling_config)
             try:
-                pp.runpp(net)
+                pp.runpp(net, enforce_q_lims=True, delta_q=0.)
                 not_converged = False
             except:
                 not_converged = True
