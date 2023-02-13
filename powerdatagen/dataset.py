@@ -54,9 +54,16 @@ def build_dataset(default_net, n_files, path, sampling_config, reject_max):
     for i in pbar:
         not_converged, reject = True, True
         while not_converged or reject:
-            net = sample_power_grid(default_net, sampling_config)
+            continue_loop = True
+            while continue_loop:
+                try:
+                    net = sample_power_grid(default_net, sampling_config)
+                    continue_loop = False
+                except:
+                    continue_loop = True
+
             try:
-                pp.runpp(net, enforce_q_lims=True, delta_q=0.)
+                pp.runpp(net, init="results", enforce_q_lims=True, delta_q=0.)
                 not_converged = False
             except:
                 not_converged = True
@@ -64,6 +71,7 @@ def build_dataset(default_net, n_files, path, sampling_config, reject_max):
             reject = reject_function(net)
             if reject:
                 n_rejection += 1
+
 
         file_name = 'sample_' + str(i).rjust(n_characters, '0') + '.json'
         file_path = os.path.join(path, file_name)
