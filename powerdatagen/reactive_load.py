@@ -21,6 +21,8 @@ def sample_reactive_load(net, default_net, config):
         sample_uniform_independent_values(net, params)
     elif method == 'normal_independent_values':
         sample_normal_independent_values(net, params)
+    elif method == 'uniform_power_factor':
+        sample_uniform_power_factor(net, params)
 
 
 def apply_constant_pq_ratio(net, default_net):
@@ -67,3 +69,20 @@ def sample_normal_independent_values(net, params):
     n_load = len(net.load)
     values = np.random.normal(params[0], params[1], size=n_load)
     net.load.q_mvar = values
+
+
+def sample_uniform_power_factor(net, params):
+    """Samples a uniform power factor, and randomly flips sign.
+
+    Follows the strategy exposed in Deep Reinforcement Learning for Electric Transmission Voltage Control
+    by Brandon L. Thayer and Thomas J. Overbye.
+
+    The power factor is drawn uniformly from [params[0], params[1]].
+    The sign has a params[2] probability of being flipped.
+    Q = sign x P x tan(arccos(power_factor))
+    """
+    n_load = len(net.load)
+    pf = np.random.uniform(0.8, 1., [n_load])
+    p = net.load.p_mw.values
+    sign = np.random.choice(a=[-1, 1], p=[0.1, 0.9], size=[n_load])
+    net.load.q_mvar = sign * p * np.tan(np.arccos(pf))
