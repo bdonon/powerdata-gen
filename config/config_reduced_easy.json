@@ -31,7 +31,7 @@
     },
     "reactive_load": {
       "sampling_method": "uniform_power_factor",
-      "params": []
+      "params": [0.8, 1.0, 0.1]
     },
     "active_gen": {
       "sampling_method": "opf",
@@ -39,7 +39,7 @@
     },
     "voltage_setpoint": {
       "sampling_method": "constant",
-      "params": [0.8, 1.0, 0.1]
+      "params": []
     }
   }
 }

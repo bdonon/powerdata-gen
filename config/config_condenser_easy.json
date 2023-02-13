@@ -1,7 +1,7 @@
 {
   "default_net_path": "standard_cases/case60nordic_condenser_easy.json",
-  "dataset_name": "data/case60nordic_condenser_easy",
-  "n_train": 1000,
+  "dataset_name": "data/case60nordic_condenser_easy_large",
+  "n_train": 100000,
   "n_test": 1000,
   "seed": 2022,
   "sampling": {
@@ -31,7 +31,7 @@
     },
     "reactive_load": {
       "sampling_method": "uniform_power_factor",
-      "params": []
+      "params": [0.8, 1.0, 0.1]
     },
     "active_gen": {
       "sampling_method": "opf",
@@ -39,7 +39,7 @@
     },
     "voltage_setpoint": {
       "sampling_method": "constant",
-      "params": [0.8, 1.0, 0.1]
+      "params": []
     }
   }
 }
