@@ -1,6 +1,6 @@
 from .random import sample_normal_simplex, sample_uniform_simplex
 import numpy as np
-
+import pandapower as pp
 
 def sample_active_generation_reject(net, default_net, total_load, config, reject_max):
     """Samples generation, rejects and counts invalid samples w.r.t. min_p and max_p."""
@@ -33,6 +33,8 @@ def sample_active_generation(net, default_net, total_load, config):
         sample_uniform_independent_values(net, default_net, total_load, params)
     elif method == 'normal_independent_values':
         sample_normal_independent_values(net, default_net, total_load, params)
+    elif method == 'opf':
+        sample_opf(net, default_net, total_load, params)
 
 
 def apply_homothetic_transform(net, default_net, total_load):
@@ -98,10 +100,27 @@ def sample_normal_independent_values(net, default_net, total_load, params):
     active_sgen = net.sgen.in_service
     n_gen = active_gen.sum()
     n_sgen = active_sgen.sum()
-    #default_total_load = default_net.load.p_mw.sum()
-    #default_total_gen = default_net.gen.p_mw.sum() + default_net.sgen.p_mw.sum()
-    total_gen = total_load * 1.02 #default_total_gen / default_total_load
+    total_gen = total_load * 1.02
     factor = sample_uniform_simplex(params[0], size=n_gen + n_sgen)
     net.gen.p_mw.loc[active_gen] = factor[:n_gen] * total_gen
     net.sgen.p_mw.loc[active_sgen] = factor[n_gen:] * total_gen
 
+
+def sample_opf(net, default, total_load, params):
+    """Samples random linear costs for generators and solves the DC-OPF for active power dispatch."""
+    net.line.max_loading_percent = params[0]
+    net.trafo.max_loading_percent = params[0]
+    n_poly_cost = len(net.poly_cost)
+    price = np.random.uniform(1, 2, size=[n_poly_cost])
+    net.poly_cost.cp1_eur_per_mw = price
+    pp.rundcopp(net)
+    net.gen.p_mw = net.res_gen.p_mw
+    net.gen.vm_pu = net.res_gen.vm_pu
+    deactivated = (net.gen.p_mw - net.gen.min_p_mw) < 0.1
+    net.gen.in_service.loc[deactivated] = False
+    net.gen.p_mw.loc[deactivated] = 0.
+    pp.rundcopp(net, init="results")
+    net.gen.p_mw = net.res_gen.p_mw
+    net.gen.vm_pu = net.res_gen.vm_pu
+    net.line.max_loading_percent = 100.
+    net.trafo.max_loading_percent = 100.
