@@ -82,7 +82,7 @@ def sample_uniform_power_factor(net, params):
     Q = sign x P x tan(arccos(power_factor))
     """
     n_load = len(net.load)
-    pf = np.random.uniform(0.8, 1., [n_load])
+    pf = np.random.uniform(params[0], params[1], [n_load])
     p = net.load.p_mw.values
-    sign = np.random.choice(a=[-1, 1], p=[0.1, 0.9], size=[n_load])
+    sign = np.random.choice(a=[-1, 1], p=[params[2], 1.-params[2]], size=[n_load])
     net.load.q_mvar = sign * p * np.tan(np.arccos(pf))
