@@ -116,17 +116,17 @@ The sampling of the reactive load is performed after the sampling of active load
 In many of the proposed methods, the reactive power of a load depends on the new value of the active power.
 The following sampling methods are available, where parameters are denoted as $\alpha$ :
 
-| method                               | parameters           | process                                                                                                                     |
-|--------------------------------------|----------------------|-----------------------------------------------------------------------------------------------------------------------------|
-| `constant`                           | None                 | $Q_i^{new} = Q_i^{old}$                                                                                                     |
-| `constant_pq_ratio`                  | None                 | $Q_i^{new} = P_i^{new} \times \frac{Q_i^{old}}{P_i^{old}}$                                                                  |
-| `uniform_homothetic_factor`          | $\alpha_1, \alpha_2$ | $Q_i^{new} = \epsilon \times Q_i^{old}; \epsilon \sim \mathcal{U}([\alpha_1, \alpha_2])$                                    |
-| `normal_homothetic_factor`           | $\alpha_1, \alpha_2$ | $Q_i^{new} = \epsilon \times Q_i^{old}; \epsilon \sim \mathcal{N}(\alpha_1, \alpha_2)$                                      |
-| `uniform_independent_factor`         | $\alpha_1, \alpha_2$ | $Q_i^{new} = \epsilon_i \times Q_i^{old}; \epsilon_i \sim \mathcal{U}([\alpha_1, \alpha_2])$                                |
-| `normal_independent_factor`          | $\alpha_1, \alpha_2$ | $Q_i^{new} = \epsilon_i \times Q_i^{old}; \epsilon_i \sim \mathcal{N}(\alpha_1, \alpha_2)$                                  |
-| `uniform_independent_values`         | $\alpha_1, \alpha_2$ | $Q_i^{new} \sim \mathcal{U}([\alpha_1, \alpha_2])$                                                                          |
-| `normal_independent_values`          | $\alpha_1, \alpha_2$ | $Q_i^{new} \sim \mathcal{N}(\alpha_1, \alpha_2)$                                                                            |
-| `uniform_power_factor`               | $pf_{min}, pf_{max}, Prob(flip)$ | $pf_i \sim \mathcal{U}([pf_{min}, pf_{max}]), P(sign_i=-1) = Prob(flip), Q_i = sign_i \times P_i \times tan(arccos(pf_i)) $ |
+| method                               | parameters                   | process                                                                                                                |
+|--------------------------------------|------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| `constant`                           | None                         | $Q_i^{new} = Q_i^{old}$                                                                                                |
+| `constant_pq_ratio`                  | None                         | $Q_i^{new} = P_i^{new} \times \frac{Q_i^{old}}{P_i^{old}}$                                                             |
+| `uniform_homothetic_factor`          | $\alpha_1, \alpha_2$         | $Q_i^{new} = \epsilon \times Q_i^{old}; \epsilon \sim \mathcal{U}([\alpha_1, \alpha_2])$                               |
+| `normal_homothetic_factor`           | $\alpha_1, \alpha_2$         | $Q_i^{new} = \epsilon \times Q_i^{old}; \epsilon \sim \mathcal{N}(\alpha_1, \alpha_2)$                                 |
+| `uniform_independent_factor`         | $\alpha_1, \alpha_2$         | $Q_i^{new} = \epsilon_i \times Q_i^{old}; \epsilon_i \sim \mathcal{U}([\alpha_1, \alpha_2])$                           |
+| `normal_independent_factor`          | $\alpha_1, \alpha_2$         | $Q_i^{new} = \epsilon_i \times Q_i^{old}; \epsilon_i \sim \mathcal{N}(\alpha_1, \alpha_2)$                             |
+| `uniform_independent_values`         | $\alpha_1, \alpha_2$         | $Q_i^{new} \sim \mathcal{U}([\alpha_1, \alpha_2])$                                                                     |
+| `normal_independent_values`          | $\alpha_1, \alpha_2$         | $Q_i^{new} \sim \mathcal{N}(\alpha_1, \alpha_2)$                                                                       |
+| `uniform_power_factor`               | $\alpha_1, \alpha_2, \gamma$ | $pf_i \sim \mathcal{U}([\alpha_1, \alpha_2]), P(sign_i=-1) = \beta, Q_i = sign_i \times P_i \times tan(arccos(pf_i)) $ |
 
 ![Reactive load sampling](./figures/reactive_load_dark.png#gh-dark-mode-only)
 ![Reactive load sampling](./figures/reactive_load_light.png#gh-light-mode-only)
