@@ -1,33 +1,28 @@
-import argparse
-import shutil
-import json
-import os
+# -*- coding: utf-8 -*-
+"""Samples power grid datasets based on provided configuration."""
 
-from powerdatagen import build_train_test_datasets
+import logging
+import os
+import shutil
+
+import hydra
+from omegaconf import DictConfig
+
+from powerdatagen import build_datasets
+
+os.environ["HYDRA_FULL_ERROR"] = "1"
+
+log = logging.getLogger(__name__)
+
+
+@hydra.main(version_base=None, config_path="config", config_name="config")
+def main(cfg: DictConfig) -> None:
+    """Builds train, val and test datasets."""
+    save_path = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
+    shutil.copyfile(cfg.default_net_path, os.path.join(save_path, 'default_net.json'))
+    build_datasets(cfg.default_net_path, save_path, log, cfg.n_train, cfg.n_val, cfg.n_test, cfg.sampling,
+                   cfg.powerflow, cfg.filtering, cfg.seed)
 
 
 if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser(description='Generate a randomly dataset from a single power grid.')
-    parser.add_argument('--config_file', type=str, required=True, help='Config json file.')
-
-    args = parser.parse_args()
-    with open(args.config_file) as f:
-        config = json.load(f)
-
-    default_net_path = config.get("default_net_path")
-    dataset_name = config.get("dataset_name", "data/no_name")
-    n_train = config.get("n_train", 1000)
-    n_test = config.get("n_test", 100)
-    sampling_config = config.get("sampling")
-    reject_max = config.get("reject_max", 10)
-    seed = config.get("seed", None)
-
-    os.mkdir(dataset_name)
-    config_dir = os.path.join(dataset_name, 'config')
-    os.mkdir(config_dir)
-    shutil.copyfile(default_net_path, os.path.join(config_dir, 'default_net.json'))
-    with open(os.path.join(config_dir, 'parameters.json'), 'w') as f:
-        json.dump(config, f)
-
-    build_train_test_datasets(default_net_path, dataset_name, n_train, n_test, sampling_config, reject_max, seed)
+    main()
