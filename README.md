@@ -24,7 +24,7 @@ git clone https://github.com/bdonon/powerdata-gen.git
 ```
 Then, go inside the project :
 ```
-cd powerdata_gen
+cd powerdata-gen
 ```
 
 ## Virtual Environment
