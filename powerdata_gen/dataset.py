@@ -11,8 +11,8 @@ import tqdm
 from omegaconf import DictConfig
 from pandapower import pandapowerNet
 
-from powerdatagen.powergrid.core import sample_power_grid
-from powerdatagen.utils import SamplingException
+from powerdata_gen.powergrid.core import sample_power_grid
+from powerdata_gen.utils import SamplingException
 
 
 def build_datasets(net_path: pandapowerNet, save_path: str, log: logging.Logger, n_train: int, n_val: int, n_test: int,

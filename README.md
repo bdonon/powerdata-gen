@@ -20,7 +20,7 @@ satisfies certain conditions.
 
 First, you need to clone the repository :
 ```
-git clone https://github.com/bdonon/powerdata_gen.git
+git clone https://github.com/bdonon/powerdata-gen.git
 ```
 Then, go inside the project :
 ```

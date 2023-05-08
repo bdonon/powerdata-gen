@@ -1,7 +1,7 @@
-default_net_path: "inputs/case60nordic_reduced_hard.json"
-n_train: 100
-n_val: 10
-n_test: 10
+default_net_path: "inputs/case60nordic_vanilla.json"
+n_train: 100000
+n_val: 10000
+n_test: 10000
 seed: 1
 
 sampling:

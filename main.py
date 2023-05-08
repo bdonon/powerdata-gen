@@ -8,7 +8,7 @@ import shutil
 import hydra
 from omegaconf import DictConfig
 
-from powerdatagen import build_datasets
+from powerdata_gen import build_datasets
 
 os.environ["HYDRA_FULL_ERROR"] = "1"
 
