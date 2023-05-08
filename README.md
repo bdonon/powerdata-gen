@@ -1,105 +1,146 @@
-# powerdatagen
-Generates a dataset of [pandapower](https://pandapower.org) power grids datasets from a single snapshot.
+![](figures/powerdata-gen_banner_dark.png#gh-dark-mode-only)
+![](figures/powerdata-gen_banner_light.png#gh-light-mode-only)
 
-# Usage
+An open-source power grid dataset generator.
+
+# Content
+This tool generates a dataset of [pandapower](https://pandapower.org) power grids datasets from a single snapshot.
+
+It is compatible with [powerdata-view](https://github.com/bdonon/powerdata-view) for dataset visualization.
+
+It randomly samples power grids built from a provided source power grid to generate datasets (i.e. directories filled
+with pandapower files).
+After the sampling, an AC power flow is run and a filtering is applied to make sure that the generated dataset
+satisfies certain conditions.
+
+![](figures/sampling_dark.png#gh-dark-mode-only)
+![](figures/sampling_light.png#gh-light-mode-only)
+
+# Installation
+
+First, you need to clone the repository :
 ```
-python main.py --config_file config.json
+git clone https://github.com/bdonon/powerdata_gen.git
+```
+Then, go inside the project :
+```
+cd powerdata_gen
 ```
 
-# Infos
+## Virtual Environment
+It is usually a good practice to have a virtual environment per project, so that any package installation that 
+you do for one project will not alter the others.
+There are multiple ways of creating a virtual environment (virtualenv, conda or even your IDE).
 
-It generates both a train and a test sets from the same data generating process.
+In the following, we guide you through the creation of a virtual environment using the package virtualenv :
+```
+pip install virtualenv
+virtualenv venv -p python3.10
+```
+Then, you need to activate the virtual environment :
+```
+source venv/bin/activate
+```
 
-# Configuration
+## Installing dependencies
 
-The file `config.json` defines the parameters of the data generation process.
+Once your virtual environment activated, you will have to install the packages that powerdata-view requires :
+```
+pip install -r requirements.txt
+```
 
-| parameter          | purpose                                                                                      |
-|--------------------|----------------------------------------------------------------------------------------------|
-| `default_net_path` | Path to the default pandapower network. Should be a `.json` file.                            |
-| `dataset_name`     | Path where the generated dataset should be stored.                                           |
-| `n_train`          | Amount of samples in the train set.                                                          |
-| `n_test`           | Amount of samples in the test set.                                                           |
-| `reject_max`       | Max amount of rejection (negative loads or out of range generation) before complete restart. |
-| `sampling`         | Defines the data generating process from which power grids are sampled.                      |
+# Basic Usage
 
-In the `sampling` field, one can define how the topology, loads and generation are built :
+To run powerdata-gen, you just need to run the following :
+```
+python main.py
+```
+The generated datasets are located in `outputs/`.
 
-| parameter          | purpose                                                       |
-|--------------------|---------------------------------------------------------------|
-| `topology`         | Sampling of lines, generators and loads to be disconnected.   |
-| `total_load`       | Sampling of total summed load in *MW*.                        |
-| `active_load`      | Sampling of individual active load in *MW*.                   |
-| `reactive_load`    | Sampling of individual reactive loads in *MVAr*.              |
-| `active_gen`       | Sampling of individual active generation in *MW*.             |
-| `voltage_setpoint` | Sampling of individual generator voltage setpoints in *p.u.*. |
+# Configuration File
 
-These options are detailed in the following.
+The configuration is defined in `config/config.yaml`. Here are the different fields :
+- `default_net_path`: Path to the source pandapower .json file.
+- `n_train`: Amount of sampled power grids in the Train dataset.
+- `n_val`: Amount of sampled power grids in the Val dataset.
+- `n_test`: Amount of sampled power grids in the Test dataset.
+- `seed`: Random seed for the data generation process.
+- `sampling`: Defines the sampling methods for the different components of the grid.
+  - `topology`: Topology sampling process, cf. below.
+  - `total_total`: Total active load sum sampling process, cf. below.
+  - `active_load`: Individual active load sampling process, cf. below.
+  - `reactive_load`: Individual reactive load sampling process, cf. below.
+  - `active_gen`: Individual active generation sampling process, cf. below.
+  - `voltage_setpoint`: Individual voltage set points sampling process, cf. below.
+- `powerflow`: Pandapower AC power flow options.
+- `filtering`: Defines the filtering step that rejects invalid samples, cf. below.
 
-## Topology
+## Sampling
+
+As shown in the figure above, the sampling process can be split into multiple parts.
+For each part, the configuration is required to provide a sampling method name, and a set of parameters 
+(defined as a set of keyword arguments).
+
+### Topology
 
 Sampling of the power grid topology.
 
 | method                 | parameters | process                                           |
 |------------------------|------------|---------------------------------------------------|
-| `constant`             | None       | Does nothing                                      |
+| `constant`             | -          | Does nothing                                      |
 | `random_disconnection` | See below  | Randomly disconnects lines, generators and loads. |
 
 In the `random_disconnection` mode, one should define a list of disconnection probabilities
-for generators, loads and lines. The first value of the list is the probability that
-no object of the given class is disconnected, the second is the probability that one
-object is disconnected, the third is the probability that two objects are disconnected, 
-and so on.
-Then, once the amount of object to disconnect has been sampled, the process chooses randomly
-this amount of objects uniformly from the list of existing devices.
-
+for generators, loads and lines.
 For instance, let us consider the following parameters :
 ```
-{"sampling_method": "random_disconnection", 
-"params": {"gen": [0.6, 0.4], "load": [1.0], "line": [0.0, 1.0]},
-"black_lists: {"line": [10, 11]}}
+  topology:
+    method: "random_disconnection"
+    params:
+      line:
+        probs:
+          0: 0.2
+          4: 0.8
+        black_list: [25, 30]
 ```
-There is a *60%* probability that no generators are disconnected, and *40%* probability that 
-one of them is disconnected.
-There is a *100%* probability that no loads is disconnected, and a *100%* probability
-that exactly one transmission line is disconnected.
+There is a *20%* probability that no lines are disconnected, and *80%* probability that 
+four of them (uniformly selected) are disconnected.
+Moreover, lines 25 and 30 are ``blacklisted'' and will not be disconnected at all.
 
-Moreover, lines 10 and 11 are ``blacklisted'' and will not be disconnected at all.
-
-## Total load
+### Total Load
 
 Sampling of the total consumption of the grid, denoted as $P_{tot}^{new}$.
-The following sampling methods are available, where parameters are denoted as $\alpha$ :
+The following sampling methods and corresponding params are available:
 
-| method           | parameters           | process                                                                                             |
-|------------------|----------------------|-----------------------------------------------------------------------------------------------------|
-| `constant`       | None                 | $P_{tot}^{new} = P_{tot}^{old}$.                                                                    |
-| `uniform_factor` | $\alpha_1, \alpha_2$ | $P_{tot}^{new} = \epsilon \times P_{tot}^{old}$ ; $\epsilon \sim \mathcal{U}([\alpha_1, \alpha_2])$ |
-| `normal_factor`  | $\alpha_1, \alpha_2$ | $P_{tot}^{new} = \epsilon \times P_{tot}^{old}$ ; $\epsilon \sim \mathcal{N}(\alpha_1, \alpha_2)$   |
-| `uniform_values` | $\alpha_1, \alpha_2$ | $P_{tot}^{new} \sim \mathcal{U}([\alpha_1, \alpha_2])$                                              |
-| `normal_values`  | $\alpha_1, \alpha_2$ | $P_{tot}^{new} \sim \mathcal{N}(\alpha_1, \alpha_2)$                                                |
+| method           | params               | process                                                                                               |
+|------------------|----------------------|-------------------------------------------------------------------------------------------------------|
+| `constant`       | -                    | $P_{tot}^{new} = P_{tot}^{old}$.                                                                      |
+| `uniform_factor` | `min_val`, `max_val` | $P_{tot}^{new} = \epsilon \times P_{tot}^{old}$ ; $\epsilon \sim \mathcal{U}([`min_val`, `max_val`])$ |
+| `normal_factor`  | `mean`, `std`        | $P_{tot}^{new} = \epsilon \times P_{tot}^{old}$ ; $\epsilon \sim \mathcal{N}(`mean`; `std`)$          |
+| `uniform_values` | `min_val`, `max_val` | $P_{tot}^{new} \sim \mathcal{U}([`min_val`, `max_val`])$                                              |
+| `normal_values`  | `mean`, `std`        | $P_{tot}^{new} \sim \mathcal{N}(`mean`; `std`)$                                                       |
 
-## Active load
+### Active Load
 
 Sampling of the individual active loads in *MW*.
-The following sampling methods are available, where parameters are denoted as $\alpha$ :
+The following sampling methods and corresponding params are available:
 
-| method                       | parameters           | process                                                                                                                                |
-|------------------------------|----------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| `homothetic`                 | None                 | $P_i^{new} = P_i^{old} \times \frac{P_{tot}^{new}}{P_{tot}^{old}}$                                                                     |
-| `uniform_independent_factor` | $\alpha$             | $P_i^{new} = (\epsilon_i - \frac{1}{n} + \frac{P_i^{old}}{P_{tot}^{old}}) \times P_{tot}^{new} ; \epsilon \sim \mathcal{U}(S(\alpha))$ |
-| `normal_independent_factor`  | $\alpha_1, \alpha_2$ | $P_i^{new} = (\epsilon_i - \frac{\sum \epsilon_j}{n} + \frac{P_i^{old}}{P_{tot}^{old}}) \times P_{tot}^{new} ; \epsilon_i \sim \mathcal{N}(\alpha_1, \alpha_2)$         |
-| `uniform_independent_values` | $\alpha$             | $P_i^{new} = \epsilon_i \times P_{tot}^{new} ; \epsilon \sim \mathcal{U}(S(\alpha))$                                                   |
-| `normal_independent_values`  | $\alpha_1, \alpha_2$ | $P_i^{new} = (\epsilon_i + \frac{1-\sum \epsilon_j}{n}) \times P_{tot}^{new} ; \epsilon_i \sim \mathcal{N}(\alpha_1, \alpha_2)$        |
+| method                       | parameters    | process                                                                                                                                                    |
+|------------------------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `homothetic`                 | -             | $P_i^{new} = P_i^{old} \times \frac{P_{tot}^{new}}{P_{tot}^{old}}$                                                                                         |
+| `uniform_independent_factor` | `beta`        | $P_i^{new} = (\epsilon_i - \frac{1}{n} + \frac{P_i^{old}}{P_{tot}^{old}}) \times P_{tot}^{new} ; \epsilon \sim \mathcal{U}(S(`beta`))$                     |
+| `normal_independent_factor`  | `mean`, `std` | $P_i^{new} = (\epsilon_i - \frac{\sum \epsilon_j}{n} + \frac{P_i^{old}}{P_{tot}^{old}}) \times P_{tot}^{new} ; \epsilon_i \sim \mathcal{N}(`mean`; `std`)$ |
+| `uniform_independent_values` | `beta`        | $P_i^{new} = \epsilon_i \times P_{tot}^{new} ; \epsilon \sim \mathcal{U}(S(`beta`))$                                                                       |
+| `normal_independent_values`  | `mean`, `std` | $P_i^{new} = (\epsilon_i + \frac{1-\sum \epsilon_j}{n}) \times P_{tot}^{new} ; \epsilon_i \sim \mathcal{N}(`mean`; `std`)$                                 |
 
-[^1]: scaled so that it respects the total load.
+[^1] scaled so that it respects the total load.
 
 where $n$ is the amount of loads and $S(\alpha) = \lbrace x | \sum x_i = 1, x_i \leq \alpha \rbrace $.
 
-In the four last sampling methods, the parameter $\alpha \in [0,1]$ controls the spread 
+In the four last sampling methods, the parameter $`beta` \in [0,1]$ controls the spread 
 of the distribution. Let us consider the case of the `uniform_independent_values`.
-- If $\alpha = 0$, then the distribution is a dirac where all loads are the same.
-- If $\alpha = 1$ then the distribution is uniform over a simplex.
+- If $`beta` = 0$, then the distribution is a dirac where all loads are the same.
+- If $`beta` = 1$ then the distribution is uniform over a simplex.
 
 ![Active load sampling](./figures/active_load_dark.png#gh-dark-mode-only)
 ![Active load sampling](./figures/active_load_light.png#gh-light-mode-only)
@@ -108,74 +149,77 @@ of the distribution. Let us consider the case of the `uniform_independent_values
 > if there are only two loads. When dealing with n loads, the uniform sampling 
 > will amount to sampling from a n-dimensional simplex, thus making the marginal 
 > distributions skewed towards low values.
- 
-## Reactive load
+
+### Reactive Load
 
 Sampling of the individual reactive loads in *MVAr*.
 The sampling of the reactive load is performed after the sampling of active loads.
 In many of the proposed methods, the reactive power of a load depends on the new value of the active power.
-The following sampling methods are available, where parameters are denoted as $\alpha$ :
+The following sampling methods and corresponding params are available:
 
-| method                               | parameters                   | process                                                                                                                |
-|--------------------------------------|------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| `constant`                           | None                         | $Q_i^{new} = Q_i^{old}$                                                                                                |
-| `constant_pq_ratio`                  | None                         | $Q_i^{new} = P_i^{new} \times \frac{Q_i^{old}}{P_i^{old}}$                                                             |
-| `uniform_homothetic_factor`          | $\alpha_1, \alpha_2$         | $Q_i^{new} = \epsilon \times Q_i^{old}; \epsilon \sim \mathcal{U}([\alpha_1, \alpha_2])$                               |
-| `normal_homothetic_factor`           | $\alpha_1, \alpha_2$         | $Q_i^{new} = \epsilon \times Q_i^{old}; \epsilon \sim \mathcal{N}(\alpha_1, \alpha_2)$                                 |
-| `uniform_independent_factor`         | $\alpha_1, \alpha_2$         | $Q_i^{new} = \epsilon_i \times Q_i^{old}; \epsilon_i \sim \mathcal{U}([\alpha_1, \alpha_2])$                           |
-| `normal_independent_factor`          | $\alpha_1, \alpha_2$         | $Q_i^{new} = \epsilon_i \times Q_i^{old}; \epsilon_i \sim \mathcal{N}(\alpha_1, \alpha_2)$                             |
-| `uniform_independent_values`         | $\alpha_1, \alpha_2$         | $Q_i^{new} \sim \mathcal{U}([\alpha_1, \alpha_2])$                                                                     |
-| `normal_independent_values`          | $\alpha_1, \alpha_2$         | $Q_i^{new} \sim \mathcal{N}(\alpha_1, \alpha_2)$                                                                       |
-| `uniform_power_factor`               | $\alpha_1, \alpha_2, \gamma$ | $pf_i \sim \mathcal{U}([\alpha_1, \alpha_2]), P(sign_i=-1) = \beta, Q_i = sign_i \times P_i \times tan(arccos(pf_i)) $ |
+| method                               | parameters                      | process                                                                                                                      |
+|--------------------------------------|---------------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| `constant`                           | -                               | $Q_i^{new} = Q_i^{old}$                                                                                                      |
+| `constant_pq_ratio`                  | -                               | $Q_i^{new} = P_i^{new} \times \frac{Q_i^{old}}{P_i^{old}}$                                                                   |
+| `uniform_homothetic_factor`          | `min_val`, `max_val`            | $Q_i^{new} = \epsilon \times Q_i^{old}; \epsilon \sim \mathcal{U}([`min_val`, `max_val`])$                                   |
+| `normal_homothetic_factor`           | `mean`, `std`                   | $Q_i^{new} = \epsilon \times Q_i^{old}; \epsilon \sim \mathcal{N}(`mean`; `std`)$                                            |
+| `uniform_independent_factor`         | `min_val`, `max_val`            | $Q_i^{new} = \epsilon_i \times Q_i^{old}; \epsilon_i \sim \mathcal{U}([`min_val`, `max_val`])$                               |
+| `normal_independent_factor`          | `mean`, `std`                   | $Q_i^{new} = \epsilon_i \times Q_i^{old}; \epsilon_i \sim \mathcal{N}(`mean`; `std`)$                                        |
+| `uniform_independent_values`         | `min_val`, `max_val`            | $Q_i^{new} \sim \mathcal{U}([`min_val`, `max_val`])$                                                                         |
+| `normal_independent_values`          | `mean`, `std`                   | $Q_i^{new} \sim \mathcal{N}(`mean`; `std`)$                                                                                  |
+| `uniform_power_factor`               | `pf_min`, `pf_max`, `flip_prob` | $pf_i \sim \mathcal{U}([`pf_min`, `pf_max`]), P(sign_i=-1) = `flip_prob`, Q_i = sign_i \times P_i \times tan(arccos(pf_i)) $ |
 
 ![Reactive load sampling](./figures/reactive_load_dark.png#gh-dark-mode-only)
 ![Reactive load sampling](./figures/reactive_load_light.png#gh-light-mode-only)
 
-## Active generation
+### Active Generation
 
-Identical to active loads. The total load is scaled by a factor 1.02 to account for the power 
-losses caused by Joule's effect.
+Sampling of the individual active loads in *MW*.
+The following sampling methods and corresponding params are available:
 
-An additional mode called `opf` is available.
-Generator costs are sampled from $[1.0, 2.0]$, and active generation is set by solving the DC-OPF using
-`pandapower.rundcopp`. 
-The percentage of thermal limits can be adjusted so that going from DC to AC does not cause overflows.
+| method                       | parameters                                                                               | process                                                                                                                                                                                                         |
+|------------------------------|------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `homothetic`                 | -                                                                                        | $P_i^{new} = P_i^{old} \times \frac{P_{tot}^{new}}{P_{tot}^{old}}$                                                                                                                                              |
+| `uniform_independent_factor` | `beta`                                                                                   | $P_i^{new} = (\epsilon_i - \frac{1}{n} + \frac{P_i^{old}}{P_{tot}^{old}}) \times P_{tot}^{new} ; \epsilon \sim \mathcal{U}(S(`beta`))$                                                                          |
+| `normal_independent_factor`  | `mean`, `std`                                                                            | $P_i^{new} = (\epsilon_i - \frac{\sum \epsilon_j}{n} + \frac{P_i^{old}}{P_{tot}^{old}}) \times P_{tot}^{new} ; \epsilon_i \sim \mathcal{N}(`mean`; `std`)$                                                      |
+| `uniform_independent_values` | `beta`                                                                                   | $P_i^{new} = \epsilon_i \times P_{tot}^{new} ; \epsilon \sim \mathcal{U}(S(`beta`))$                                                                                                                            |
+| `normal_independent_values`  | `mean`, `std`                                                                            | $P_i^{new} = (\epsilon_i + \frac{1-\sum \epsilon_j}{n}) \times P_{tot}^{new} ; \epsilon_i \sim \mathcal{N}(`mean`; `std`)$                                                                                      |
+| `dc_opf`                     | `min_cp0`, `max_cp0`, `min_cp1`, `max_cp1`, `min_cp2`, `max_cp2`                         | DC-OPF with random polynomial cost coefficients $c_0\sim \mathcal{U}([`min_cp0`, `max_cp0`])$, $c_1\sim \mathcal{U}([`min_cp1`, `max_cp1`])$, $c_2\sim \mathcal{U}([`min_cp2`, `max_cp2`])$.                    |
+| `dc_opf_disconnect`          | `max_loading_percent`, `min_cp0`, `max_cp0`, `min_cp1`, `max_cp1`, `min_cp2`, `max_cp2`  | DC-OPF with disconnection with random polynomial cost coefficients $c_0\sim \mathcal{U}([`min_cp0`, `max_cp0`])$, $c_1\sim \mathcal{U}([`min_cp1`, `max_cp1`])$, $c_2\sim \mathcal{U}([`min_cp2`, `max_cp2`])$. | 
 
-| method                       | parameters               | process                                                                                                                                                         |
-|------------------------------|--------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `homothetic`                 | None                     | $P_i^{new} = P_i^{old} \times \frac{P_{tot}^{new}}{P_{tot}^{old}}$                                                                                              |
-| `uniform_independent_factor` | $\alpha$                 | $P_i^{new} = (\epsilon_i - \frac{1}{n} + \frac{P_i^{old}}{P_{tot}^{old}}) \times P_{tot}^{new} ; \epsilon \sim \mathcal{U}(S(\alpha))$                          |
-| `normal_independent_factor`  | $\alpha_1, \alpha_2$     | $P_i^{new} = (\epsilon_i - \frac{\sum \epsilon_j}{n} + \frac{P_i^{old}}{P_{tot}^{old}}) \times P_{tot}^{new} ; \epsilon_i \sim \mathcal{N}(\alpha_1, \alpha_2)$ |
-| `uniform_independent_values` | $\alpha$                 | $P_i^{new} = \epsilon_i \times P_{tot}^{new} ; \epsilon \sim \mathcal{U}(S(\alpha))$                                                                            |
-| `normal_independent_values`  | $\alpha_1, \alpha_2$     | $P_i^{new} = (\epsilon_i + \frac{1-\sum \epsilon_j}{n}) \times P_{tot}^{new} ; \epsilon_i \sim \mathcal{N}(\alpha_1, \alpha_2)$                                 |
-| `opf`                        | `max_current_percentage` | DC-OPF with random costs, and thermal limits at `max_current_percentage` of $I_{max}$.                                                                          |
+In the `dc_opf_disconnect` mode, unused generators are disconnected.
 
+### Voltage Set Points
 
-## Voltage setpoints
+Sampling of the individual voltage set points in *p.u.*.
+The following sampling methods and corresponding params are available:
 
-Sampling of the individual voltage setpoints in *p.u.*.
-The following sampling methods are available, where parameters are denoted as $\alpha$ :
-
-| method                               | parameters           | process                                                                                      |
-|--------------------------------------|----------------------|----------------------------------------------------------------------------------------------|
-| `constant`                           | None                 | $V_i^{new} = V_i^{old}$                                                                      |
-| `uniform_homothetic_factor`          | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon \times V_i^{old}; \epsilon \sim \mathcal{U}([\alpha_1, \alpha_2])$     |
-| `normal_homothetic_factor`           | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon \times V_i^{old}; \epsilon \sim \mathcal{N}(\alpha_1, \alpha_2)$       |
-| `uniform_independent_factor`         | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon_i \times V_i^{old}; \epsilon_i \sim \mathcal{U}([\alpha_1, \alpha_2])$ |
-| `normal_independent_factor`          | $\alpha_1, \alpha_2$ | $V_i^{new} = \epsilon_i \times V_i^{old}; \epsilon_i \sim \mathcal{N}(\alpha_1, \alpha_2)$   |
-| `uniform_independent_values`         | $\alpha_1, \alpha_2$ | $V_i^{new} \sim \mathcal{U}([\alpha_1, \alpha_2])$                                           |
-| `normal_independent_values`          | $\alpha_1, \alpha_2$ | $V_i^{new} \sim \mathcal{N}(\alpha_1, \alpha_2)$                                             |
-
+| method                               | parameters           | process                                                                                        |
+|--------------------------------------|----------------------|------------------------------------------------------------------------------------------------|
+| `constant`                           | -                    | $V_i^{new} = V_i^{old}$                                                                        |
+| `uniform_homothetic_factor`          | `min_val`, `max_val` | $V_i^{new} = \epsilon \times V_i^{old}; \epsilon \sim \mathcal{U}([`min_val`, `max_val`])$     |
+| `normal_homothetic_factor`           | `mean`, `std`        | $V_i^{new} = \epsilon \times V_i^{old}; \epsilon \sim \mathcal{N}(`mean`; `std`)$              |
+| `uniform_independent_factor`         | `min_val`, `max_val` | $V_i^{new} = \epsilon_i \times V_i^{old}; \epsilon_i \sim \mathcal{U}([`min_val`, `max_val`])$ |
+| `normal_independent_factor`          | `mean`, `std`        | $V_i^{new} = \epsilon_i \times V_i^{old}; \epsilon_i \sim \mathcal{N}(`mean`, `std`)$          |
+| `uniform_independent_values`         | `min_val`, `max_val` | $V_i^{new} \sim \mathcal{U}([`min_val`, `max_val`])$                                           |
+| `normal_independent_values`          | `mean`, `std`        | $V_i^{new} \sim \mathcal{N}(`mean`; `std`)$                                                    |
 
 ![Voltage setpoint sampling](./figures/voltage_setpoint_dark.png#gh-dark-mode-only)
 ![Voltage setpoint sampling](./figures/voltage_setpoint_light.png#gh-light-mode-only)
 
-# Database conversion
+## Filtering
+  max_loading_percent: 99.999
+  max_count_voltage_violation: 9999
+  allow_disconnected_bus: False
+  allow_negative_load: False
+  allow_out_of_range_gen: False
 
-For now, this code generates pandapower files in `.json`. If you wish to convert this database 
-into another format, you may use the `dataset_converter.py` script as follows :
+# Using a Different Configuration File
+
+If you want to define a different configuration file (e.g. `config_2.yaml`), make sure to 
+place it inside the `config/` directory, and use it using the following :
 ```
-python dataset_converter.py --source_database 'data/case60' --target_database 'data/case60_matpower' --target_extension '.mat'
+python main.py --config-name=config_2.yaml
 ```
 
 # Contact
