@@ -45,4 +45,5 @@ def random_disconnect_devices(devices: pandapowerNet, probs: DictConfig, black_l
         black_list = []
     white_list = [i for i in range(n_obj) if i not in black_list]
     disconnected_objects = np.random.choice(white_list, size=n_disconnect, replace=False)
-    devices.in_service.iloc[disconnected_objects] = False
+    devices.reset_index(inplace=True)
+    devices.drop(disconnected_objects, inplace=True)

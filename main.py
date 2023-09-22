@@ -20,8 +20,8 @@ def main(cfg: DictConfig) -> None:
     """Builds train, val and test datasets."""
     save_path = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
     shutil.copyfile(cfg.default_net_path, os.path.join(save_path, 'default_net.json'))
-    build_datasets(cfg.default_net_path, save_path, log, cfg.n_train, cfg.n_val, cfg.n_test, cfg.sampling,
-                   cfg.powerflow, cfg.filtering, cfg.seed)
+    build_datasets(cfg.default_net_path, save_path, log, cfg.n_train, cfg.n_val, cfg.n_test, cfg.keep_reject,
+                   cfg.sampling, cfg.powerflow, cfg.filtering, cfg.seed)
 
 
 if __name__ == '__main__':
