@@ -6,7 +6,7 @@ import pandapower as pp
 from omegaconf import DictConfig
 from pandapower import pandapowerNet
 
-from powerdatagen.utils import SamplingException, sample_normal_simplex, sample_uniform_simplex
+from powerdata_gen.utils import SamplingException, sample_normal_simplex, sample_uniform_simplex
 
 
 def sample_active_generation(net: pandapowerNet, default_net: pandapowerNet, total_load: float,
@@ -148,16 +148,26 @@ def sample_dc_opf_disconnect(net: pandapowerNet, *_, max_loading_percent: float 
         raise SamplingException
 
     # Disconnect generators below their initial min_p_mw.
+    net.gen.reset_index(inplace=True)
+    net.res_gen.reset_index(inplace=True)
     gen_disconnect = net.res_gen.p_mw < old_gen_min_p_mw
-    net.gen.in_service.loc[gen_disconnect] = False
-    net.gen.p_mw.loc[gen_disconnect] = 0.
+    gen_disconnect_id = net.gen.loc[gen_disconnect].index
+    gen_bus_id = net.bus.loc[net.gen.loc[gen_disconnect].bus].index
+    for i, trafo in net.trafo.iterrows():
+        if trafo['lv_bus'] in gen_bus_id.to_list():
+            net.trafo.drop(i, inplace=True)
+    net.bus.drop(gen_bus_id, inplace=True)
+    net.gen.drop(gen_disconnect_id, inplace=True)
+
+    net.sgen.reset_index(inplace=True)
+    net.res_sgen.reset_index(inplace=True)
     sgen_disconnect = net.res_sgen.p_mw < old_sgen_min_p_mw
-    net.sgen.in_service.loc[sgen_disconnect] = False
-    net.sgen.p_mw.loc[sgen_disconnect] = 0.
+    sgen_disconnect_id = net.sgen.loc[sgen_disconnect].index
+    net.sgen.drop(sgen_disconnect_id, inplace=True)
 
     # Reset min_p_mw for connected generators.
-    net.gen.min_p_mw = old_gen_min_p_mw
-    net.sgen.min_p_mw = old_sgen_min_p_mw
+    net.gen.min_p_mw = np.delete(old_gen_min_p_mw, gen_disconnect_id)
+    net.sgen.min_p_mw = np.delete(old_sgen_min_p_mw, sgen_disconnect_id)
 
     # 2nd OPF without disconnected generators.
     try:

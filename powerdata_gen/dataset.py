@@ -11,37 +11,39 @@ import tqdm
 from omegaconf import DictConfig
 from pandapower import pandapowerNet
 
-from powerdatagen.powergrid.core import sample_power_grid
-from powerdatagen.utils import SamplingException
+from powerdata_gen.powergrid.core import sample_power_grid
+from powerdata_gen.utils import SamplingException
 
 
 def build_datasets(net_path: pandapowerNet, save_path: str, log: logging.Logger, n_train: int, n_val: int, n_test: int,
-                   sampling_cfg: DictConfig, powerflow_cfg: DictConfig, filtering_cfg: DictConfig, seed=None) -> None:
+                   keep_reject: bool, sampling_cfg: DictConfig, powerflow_cfg: DictConfig, filtering_cfg: DictConfig,
+                   seed=None) -> None:
     """Builds train, val and test sets."""
     if seed is not None:
         np.random.seed(seed)
     default_net = pp.from_json(net_path)
     log.info("Building the train set...")
-    build_one_dataset(default_net, os.path.join(save_path, 'train'), log, n_train, sampling_cfg, powerflow_cfg,
-                      filtering_cfg)
+    build_one_dataset(default_net, os.path.join(save_path, 'train'), log, n_train, keep_reject, sampling_cfg,
+                      powerflow_cfg, filtering_cfg)
     log.info("Building the validation set...")
-    build_one_dataset(default_net, os.path.join(save_path, 'val'), log, n_val, sampling_cfg, powerflow_cfg,
+    build_one_dataset(default_net, os.path.join(save_path, 'val'), log, n_val, keep_reject, sampling_cfg, powerflow_cfg,
                       filtering_cfg)
     log.info("Building the test set...")
-    build_one_dataset(default_net, os.path.join(save_path, 'test'), log, n_test, sampling_cfg, powerflow_cfg,
-                      filtering_cfg)
+    build_one_dataset(default_net, os.path.join(save_path, 'test'), log, n_test, keep_reject, sampling_cfg,
+                      powerflow_cfg, filtering_cfg)
 
 
-def build_one_dataset(default_net: pandapowerNet, path: str, log: logging.Logger, n_files: int,
+def build_one_dataset(default_net: pandapowerNet, path: str, log: logging.Logger, n_files: int, keep_reject: bool,
                       sampling_cfg: DictConfig, powerflow_cfg: DictConfig, filtering_cfg: DictConfig) -> None:
     """Builds a single dataset."""
 
     net = None
     os.mkdir(path)
-    divergence_path = os.path.join(path, "divergence")
-    os.mkdir(divergence_path)
-    reject_path = os.path.join(path, "rejection")
-    os.mkdir(reject_path)
+    if keep_reject:
+        divergence_path = os.path.join(path, "divergence")
+        os.mkdir(divergence_path)
+        reject_path = os.path.join(path, "rejection")
+        os.mkdir(reject_path)
 
     n_characters = np.ceil(np.log10(n_files)).astype(int)
     pbar = tqdm.tqdm(range(n_files))
@@ -65,9 +67,10 @@ def build_one_dataset(default_net: pandapowerNet, path: str, log: logging.Logger
                 pp.runpp(net, **powerflow_cfg)
             except pp.powerflow.LoadflowNotConverged:
                 divergence_count += 1
-                file_name = 'divergence_sample_' + str(divergence_count).rjust(n_characters, '0') + '.json'
-                file_path = os.path.join(divergence_path, file_name)
-                pp.to_json(net, file_path)
+                if keep_reject:
+                    file_name = 'divergence_sample_' + str(divergence_count).rjust(n_characters, '0') + '.json'
+                    file_path = os.path.join(divergence_path, file_name)
+                    pp.to_json(net, file_path)
                 continue
 
             # Checking the sanity of the sample.
@@ -75,9 +78,10 @@ def build_one_dataset(default_net: pandapowerNet, path: str, log: logging.Logger
             if reject:
                 filtering_count += 1
                 filtering_info = {k: filtering_info.get(k, 0) + info.get(k, 0) for k in filtering_info | info}
-                file_name = 'rejection_sample_' + str(filtering_count).rjust(n_characters, '0') + '.json'
-                file_path = os.path.join(reject_path, file_name)
-                pp.to_json(net, file_path)
+                if keep_reject:
+                    file_name = 'rejection_sample_' + str(filtering_count).rjust(n_characters, '0') + '.json'
+                    file_path = os.path.join(reject_path, file_name)
+                    pp.to_json(net, file_path)
                 continue
 
             success = True
@@ -101,6 +105,7 @@ def build_one_dataset(default_net: pandapowerNet, path: str, log: logging.Logger
 
 
 def filter_sample(net: pandapowerNet, max_loading_percent: float = None, max_count_voltage_violation: int = None,
+                  max_bus_voltage_pu: float = None, min_bus_voltage_pu: float = None,
                   allow_disconnected_bus: bool = False, allow_negative_load: bool = False,
                   allow_out_of_range_gen: bool = False) -> tuple[bool, dict]:
     """Returns a boolean that says if the considered power grid sample should be filtered out."""
@@ -142,5 +147,17 @@ def filter_sample(net: pandapowerNet, max_loading_percent: float = None, max_cou
         if count_above + count_below > max_count_voltage_violation:
             reject = True
             info["too_many_voltage_violations"] = 1
+
+    if max_bus_voltage_pu is not None:
+        overvoltage = net.res_bus.vm_pu.values > max_bus_voltage_pu
+        if any(overvoltage):
+            reject = True
+            info["over_voltage"] = 1
+
+    if min_bus_voltage_pu is not None:
+        undervoltage = net.res_bus.vm_pu.values < min_bus_voltage_pu
+        if any(undervoltage):
+            reject = True
+            info["under_voltage"] = 1
 
     return reject, info

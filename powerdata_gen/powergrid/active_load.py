@@ -4,7 +4,7 @@
 from omegaconf import DictConfig
 from pandapower import pandapowerNet
 
-from powerdatagen.utils import sample_normal_simplex, sample_uniform_simplex
+from powerdata_gen.utils import sample_normal_simplex, sample_uniform_simplex
 
 
 def sample_active_load(net: pandapowerNet, default_net: pandapowerNet, total_load: float, cfg: DictConfig) -> None:

@@ -20,11 +20,11 @@ satisfies certain conditions.
 
 First, you need to clone the repository :
 ```
-git clone https://github.com/bdonon/powerdata_gen.git
+git clone https://github.com/bdonon/powerdata-gen.git
 ```
 Then, go inside the project :
 ```
-cd powerdata_gen
+cd powerdata-gen
 ```
 
 ## Virtual Environment
@@ -208,11 +208,16 @@ The following sampling methods and corresponding params are available:
 ![Voltage setpoint sampling](./figures/voltage_setpoint_light.png#gh-light-mode-only)
 
 ## Filtering
-  max_loading_percent: 99.999
-  max_count_voltage_violation: 9999
-  allow_disconnected_bus: False
-  allow_negative_load: False
-  allow_out_of_range_gen: False
+
+After the sampling and the AC power flow step, each data sample is passed to a filtering function that
+checks a certain amount of conditions, and rejects invalid samples.
+Here are the currently implemented filtering options :
+- `max_loading_percent`: Maximum branch loading percent. Rejects samples with overflow.
+- `max_count_voltage_violation`: Maximum amount of voltage violations. Rejects samples with too many 
+  voltage violations.
+- `allow_disconnected_bus`
+- `allow_negative_load`
+- `allow_out_of_range_gen`
 
 # Using a Different Configuration File
 

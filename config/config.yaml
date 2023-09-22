@@ -1,8 +1,9 @@
-default_net_path: "inputs/case60nordic_reduced_hard.json"
-n_train: 100
-n_val: 10
-n_test: 10
+default_net_path: "inputs/case60nordic_initialized_hard.json" # "inputs/case60nordic_vanilla.json"
+n_train: 100000
+n_val: 10000
+n_test: 10000
 seed: 1
+keep_reject: False
 
 sampling:
 
@@ -21,13 +22,14 @@ sampling:
   total_load:
     method: "uniform_factor"
     params:
-      min_val: 0.5
-      max_val: 1.2
+      min_val: 0.5 # 0.5
+      max_val: 1.2 # 1.2
 
   active_load:
-    method: "uniform_independent_values"
+    method: "normal_independent_factor" # "uniform_independent_values"
     params:
-      beta: 1.0
+      std: 0.05
+      #beta: 0.1 # 1.0
 
   reactive_load:
     method: "uniform_power_factor"
@@ -39,7 +41,7 @@ sampling:
   active_gen:
     method: "dc_opf_disconnect"
     params:
-      max_loading_percent: 85.
+      max_loading_percent: 80. # 85.
       min_cp1: 1.
       max_cp1: 2.
 
@@ -53,7 +55,10 @@ powerflow:
 
 filtering:
   max_loading_percent: 99.999
-  max_count_voltage_violation: 9999
+  # max_count_voltage_violation: 5
   allow_disconnected_bus: False
   allow_negative_load: False
   allow_out_of_range_gen: False
+  max_bus_voltage_pu: 1.15
+  min_bus_voltage_pu: 0.85
+
